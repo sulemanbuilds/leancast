@@ -1,0 +1,2 @@
+all queries we executes during the development
+will be stored here so the database remains the same
