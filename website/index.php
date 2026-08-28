@@ -1118,11 +1118,6 @@ footer{
         <h3>Suleman Memon</h3>
         <p>Team Member</p>
       </div>
-      <div class="glass team-card ">
-        <div class="index-num">03</div>
-        <h3>Dua Shahid</h3>
-        <p>Team Member</p>
-      </div>
     </div>
   </div>
 </section>
