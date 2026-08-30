@@ -497,25 +497,95 @@ html, body {
 
 <script>
 /* =========================================================
-   Presentation-only behavior.
-   No demo controls, no backend calls — overlays are static
-   on load and will later be driven by Phone 2 / the PHP
-   backend.
+   Lean Cast — Broadcast State Polling
+   The broadcast screen never reloads. It reads the server state
+   through AJAX every 5 seconds and updates only changed graphics.
    ========================================================= */
+const broadcastState = {
+  active_overlay: 'main',
+  overlays: {}
+};
 
-/* Entrance timing: let the lower third and breaking news
-   settle in slightly staggered rather than popping in at once. */
-document.addEventListener('DOMContentLoaded', () => {
-  const lowerThird = document.getElementById('lowerThird');
-  const breakingNews = document.getElementById('breakingNews');
+const lowerThird = document.getElementById('lowerThird');
+const breakingNews = document.getElementById('breakingNews');
+const ticker = document.getElementById('ticker');
+const lowerThirdName = document.getElementById('lt-name');
+const lowerThirdRole = document.getElementById('lt-role');
+const lowerThirdLocation = document.getElementById('lt-location');
+const breakingHeadline = document.getElementById('bn-headline');
+const tickerInner = document.getElementById('tickerInner');
+const tickerLabel = document.querySelector('.ticker__label');
 
-  lowerThird.classList.remove('is-visible');
-  breakingNews.classList.remove('is-visible');
+function getActiveOverlay() {
+  return broadcastState.overlays[broadcastState.active_overlay] || null;
+}
 
-  requestAnimationFrame(() => {
-    setTimeout(() => lowerThird.classList.add('is-visible'), 200);
-    setTimeout(() => breakingNews.classList.add('is-visible'), 480);
-  });
+function updateVisibility(element, enabled, visibleClass = 'is-visible', hiddenClass = 'is-hidden') {
+  if (visibleClass === 'is-visible') {
+    element.classList.toggle('is-visible', enabled);
+  }
+  if (hiddenClass === 'is-hidden') {
+    element.classList.toggle('is-hidden', !enabled);
+  }
+}
+
+function updateTickerText(text) {
+  const safeText = text || 'Ticker update';
+  tickerInner.innerHTML = '';
+  const first = document.createElement('span');
+  const second = document.createElement('span');
+  first.textContent = safeText;
+  second.textContent = safeText;
+  tickerInner.append(first, second);
+}
+
+function applyOverlay(overlay) {
+  if (!overlay) return;
+
+  lowerThirdName.textContent = overlay.lower_third.name || 'REPORTER NAME';
+  lowerThirdRole.textContent = (overlay.lower_third.role || 'ROLE').toUpperCase();
+  lowerThirdLocation.textContent = (overlay.lower_third.location || 'LOCATION').toUpperCase();
+  breakingHeadline.textContent = overlay.breaking_news.headline || 'Breaking headline';
+  tickerLabel.textContent = overlay.ticker.label || 'HYDERABAD';
+  updateTickerText(overlay.ticker.text);
+
+  lowerThird.classList.toggle('is-visible', !!overlay.lower_third.enabled);
+  breakingNews.classList.toggle('is-visible', !!overlay.breaking_news.enabled);
+  ticker.classList.toggle('is-hidden', !overlay.ticker.enabled);
+}
+
+async function pollBroadcastState() {
+  try {
+    const response = await fetch('../../api/broadcast-state.php?t=' + Date.now(), {
+      method: 'GET',
+      cache: 'no-store'
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) return;
+
+    const nextState = result.data;
+    const changed = JSON.stringify(nextState) !== JSON.stringify(broadcastState);
+
+    broadcastState.active_overlay = nextState.active_overlay || 'main';
+    broadcastState.overlays = nextState.overlays || {};
+
+    if (changed) {
+      applyOverlay(getActiveOverlay());
+    }
+  } catch (error) {
+    console.warn('Lean Cast broadcast state check failed:', error);
+  }
+}
+
+/* Initial state + every 5 seconds. No page reload is ever performed. */
+document.addEventListener('DOMContentLoaded', async () => {
+  await pollBroadcastState();
+
+  const active = getActiveOverlay();
+  if (active) applyOverlay(active);
+
+  setInterval(pollBroadcastState, 5000);
 });
 </script>
 
