@@ -1,0 +1,23 @@
+{
+    "active_overlay": "main",
+    "overlays": {
+        "main": {
+            "lower_third": {
+                "enabled": true,
+                "name": "SULEMAN SINDHI",
+                "role": "Ninga Developer",
+                "location": "HYDERABAD"
+            },
+            "breaking_news": {
+                "enabled": true,
+                "headline": "University announces suspension of the Azhar Khaskheli"
+            },
+            "ticker": {
+                "enabled": true,
+                "label": "HYDERABAD",
+                "text": "More updates from Hyderabad Institute for technology and management sciences  • Stay tuned for further information"
+            }
+        }
+    },
+    "updated_at": 1788087474
+}

@@ -537,6 +537,25 @@ input, textarea {
   box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.12);
 }
 
+.field select {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 12px 13px;
+  font-size: 15px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.field select:focus {
+  border-color: rgba(255, 106, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.12);
+}
+
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1024,6 +1043,23 @@ input, textarea {
          ============================================================ -->
     <div class="col-edit">
 
+      <!-- Active overlay -->
+      <section class="panel" style="animation-delay: 0.04s">
+        <div class="panel__header">
+          <span class="panel__title"><strong>Active</strong> Overlay</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="select-overlay">Select Overlay</label>
+          <select id="select-overlay">
+            <option value="main">Main Broadcast Overlay</option>
+          </select>
+        </div>
+        <div class="panel__actions">
+          <button class="btn btn--secondary" type="button" id="copy-overlay-link">Copy Overlay Link</button>
+          <span class="save-feedback" id="feedback-overlay-link">Copied</span>
+        </div>
+      </section>
+
       <!-- Lower third -->
       <section class="panel" style="animation-delay: 0.06s">
         <div class="panel__header">
@@ -1121,9 +1157,14 @@ input, textarea {
    1. STATE
    ========================================================= */
 const state = {
-  lowerThirdOn: true,
-  breakingOn: true,
-  tickerOn: true,
+  active_overlay: 'main',
+  overlays: {
+    main: {
+      lower_third: { enabled: true, name: 'SULEMAN MEMON', role: 'FIELD REPORTER', location: 'HYDERABAD' },
+      breaking_news: { enabled: true, headline: 'University announces campus closure tomorrow' },
+      ticker: { enabled: true, label: 'HYDERABAD', text: 'More updates from Hyderabad • Stay tuned for further information' }
+    }
+  },
   lastUpdate: Date.now()
 };
 
@@ -1135,13 +1176,14 @@ const inputRole = document.getElementById('input-role');
 const inputLocation = document.getElementById('input-location');
 const inputHeadline = document.getElementById('input-headline');
 const inputTicker = document.getElementById('input-ticker');
+const selectOverlay = document.getElementById('select-overlay');
+const copyOverlayLinkBtn = document.getElementById('copy-overlay-link');
 
 const pvName = document.getElementById('pv-name');
 const pvRole = document.getElementById('pv-role');
 const pvLocation = document.getElementById('pv-location');
 const pvHeadline = document.getElementById('pv-headline');
 const pvTickerText = document.getElementById('pv-ticker-text');
-
 const pvLowerThird = document.getElementById('pv-lower-third');
 const pvBreaking = document.getElementById('pv-breaking');
 const pvTicker = document.getElementById('pv-ticker');
@@ -1149,7 +1191,6 @@ const pvTicker = document.getElementById('pv-ticker');
 const toggleLowerThird = document.getElementById('toggle-lower-third');
 const toggleBreaking = document.getElementById('toggle-breaking');
 const toggleTicker = document.getElementById('toggle-ticker');
-
 const statusLowerThird = document.getElementById('status-lower-third');
 const statusBreaking = document.getElementById('status-breaking');
 const statusTicker = document.getElementById('status-ticker');
@@ -1157,32 +1198,65 @@ const statusTicker = document.getElementById('status-ticker');
 const updateLowerThirdBtn = document.getElementById('update-lower-third');
 const updateBreakingBtn = document.getElementById('update-breaking');
 const updateTickerBtn = document.getElementById('update-ticker');
-
 const feedbackLowerThird = document.getElementById('feedback-lower-third');
 const feedbackBreaking = document.getElementById('feedback-breaking');
 const feedbackTicker = document.getElementById('feedback-ticker');
-
+const feedbackOverlayLink = document.getElementById('feedback-overlay-link');
 const lastUpdateTimeEl = document.getElementById('lastUpdateTime');
 
 /* =========================================================
-   3. PREVIEW SYNC
+   3. HELPERS
    ========================================================= */
-function syncPreviewText() {
-  pvName.textContent = inputName.value.trim() || 'REPORTER NAME';
-  pvRole.textContent = (inputRole.value.trim() || 'ROLE').toUpperCase();
-  pvLocation.textContent = (inputLocation.value.trim() || 'LOCATION').toUpperCase();
-  pvHeadline.textContent = inputHeadline.value.trim() || 'Breaking headline';
-  pvTickerText.textContent = inputTicker.value.trim() || 'Ticker update';
+function getActiveOverlay() {
+  return state.overlays[state.active_overlay] || state.overlays.main;
 }
 
-function syncPreviewVisibility() {
-  pvLowerThird.classList.toggle('is-off', !state.lowerThirdOn);
-  pvBreaking.classList.toggle('is-off', !state.breakingOn);
-  pvTicker.classList.toggle('is-off', !state.tickerOn);
+function getPayload() {
+  return {
+    active_overlay: state.active_overlay,
+    overlays: { [state.active_overlay]: getActiveOverlay() }
+  };
+}
+
+function showFeedback(el, text = 'Updated') {
+  el.textContent = text;
+  el.classList.add('is-shown');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => el.classList.remove('is-shown'), 1600);
+}
+
+function setSaving(button, saving) {
+  button.disabled = saving;
+  button.style.opacity = saving ? '0.65' : '';
 }
 
 /* =========================================================
-   4. OVERLAY STATUS SYNC
+   4. PREVIEW SYNC
+   ========================================================= */
+function syncPreviewText() {
+  const overlay = getActiveOverlay();
+  inputName.value = overlay.lower_third.name || '';
+  inputRole.value = overlay.lower_third.role || '';
+  inputLocation.value = overlay.lower_third.location || '';
+  inputHeadline.value = overlay.breaking_news.headline || '';
+  inputTicker.value = overlay.ticker.text || '';
+
+  pvName.textContent = overlay.lower_third.name || 'REPORTER NAME';
+  pvRole.textContent = (overlay.lower_third.role || 'ROLE').toUpperCase();
+  pvLocation.textContent = (overlay.lower_third.location || 'LOCATION').toUpperCase();
+  pvHeadline.textContent = overlay.breaking_news.headline || 'Breaking headline';
+  pvTickerText.textContent = overlay.ticker.text || 'Ticker update';
+}
+
+function syncPreviewVisibility() {
+  const overlay = getActiveOverlay();
+  pvLowerThird.classList.toggle('is-off', !overlay.lower_third.enabled);
+  pvBreaking.classList.toggle('is-off', !overlay.breaking_news.enabled);
+  pvTicker.classList.toggle('is-off', !overlay.ticker.enabled);
+}
+
+/* =========================================================
+   5. OVERLAY STATUS SYNC
    ========================================================= */
 function syncOverlayRow(rowEl, isOn) {
   rowEl.classList.toggle('is-on', isOn);
@@ -1190,73 +1264,147 @@ function syncOverlayRow(rowEl, isOn) {
 }
 
 function syncOverlayStatus() {
-  syncOverlayRow(statusLowerThird, state.lowerThirdOn);
-  syncOverlayRow(statusBreaking, state.breakingOn);
-  syncOverlayRow(statusTicker, state.tickerOn);
+  const overlay = getActiveOverlay();
+  syncOverlayRow(statusLowerThird, overlay.lower_third.enabled);
+  syncOverlayRow(statusBreaking, overlay.breaking_news.enabled);
+  syncOverlayRow(statusTicker, overlay.ticker.enabled);
+}
+
+function syncToggle(buttonEl, enabled) {
+  buttonEl.setAttribute('aria-pressed', String(enabled));
+  buttonEl.querySelector('.toggle__label').textContent = enabled ? 'ON' : 'OFF';
+}
+
+function syncControlsFromState() {
+  const overlay = getActiveOverlay();
+  selectOverlay.value = state.active_overlay;
+  syncToggle(toggleLowerThird, overlay.lower_third.enabled);
+  syncToggle(toggleBreaking, overlay.breaking_news.enabled);
+  syncToggle(toggleTicker, overlay.ticker.enabled);
+  syncPreviewText();
+  syncPreviewVisibility();
+  syncOverlayStatus();
 }
 
 /* =========================================================
-   5. TOGGLE HANDLERS
+   6. SERVER SYNC — AJAX only
    ========================================================= */
-function wireToggle(buttonEl, key, previewEl) {
+async function saveState(feedbackEl, buttonEl = null) {
+  if (buttonEl) setSaving(buttonEl, true);
+
+  try {
+    const response = await fetch('../../api/update-overlay.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(getPayload())
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Update failed');
+    }
+
+    state.lastUpdate = Date.now();
+    refreshLastUpdateLabel();
+    if (feedbackEl) showFeedback(feedbackEl, 'Updated');
+  } catch (error) {
+    console.error('Lean Cast update failed:', error);
+    if (feedbackEl) showFeedback(feedbackEl, 'Failed');
+  } finally {
+    if (buttonEl) setSaving(buttonEl, false);
+  }
+}
+
+async function loadState() {
+  try {
+    const response = await fetch('../../api/broadcast-state.php?t=' + Date.now(), { cache: 'no-store' });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) return;
+
+    state.active_overlay = result.data.active_overlay || 'main';
+    state.overlays = result.data.overlays || state.overlays;
+    state.lastUpdate = result.data.updated_at ? result.data.updated_at * 1000 : Date.now();
+    syncControlsFromState();
+    refreshLastUpdateLabel();
+  } catch (error) {
+    console.error('Lean Cast state read failed:', error);
+  }
+}
+
+/* =========================================================
+   7. TOGGLE HANDLERS
+   ========================================================= */
+function wireToggle(buttonEl, key, feedbackEl) {
   buttonEl.addEventListener('click', () => {
-    state[key] = !state[key];
-    buttonEl.setAttribute('aria-pressed', String(state[key]));
-    buttonEl.querySelector('.toggle__label').textContent = state[key] ? 'ON' : 'OFF';
-    previewEl.classList.toggle('is-off', !state[key]);
-    syncOverlayStatus();
-    markUpdated();
+    const overlay = getActiveOverlay();
+    overlay[key].enabled = !overlay[key].enabled;
+    syncControlsFromState();
+    saveState(feedbackEl);
   });
 }
 
-wireToggle(toggleLowerThird, 'lowerThirdOn', pvLowerThird);
-wireToggle(toggleBreaking, 'breakingOn', pvBreaking);
-wireToggle(toggleTicker, 'tickerOn', pvTicker);
+wireToggle(toggleLowerThird, 'lower_third', feedbackLowerThird);
+wireToggle(toggleBreaking, 'breaking_news', feedbackBreaking);
+wireToggle(toggleTicker, 'ticker', feedbackTicker);
 
 /* =========================================================
-   6. LIVE PREVIEW WHILE TYPING
+   8. LIVE PREVIEW WHILE TYPING
    ========================================================= */
 [inputName, inputRole, inputLocation, inputHeadline, inputTicker].forEach((el) => {
-  el.addEventListener('input', syncPreviewText);
+  el.addEventListener('input', () => {
+    const overlay = getActiveOverlay();
+    overlay.lower_third.name = inputName.value;
+    overlay.lower_third.role = inputRole.value;
+    overlay.lower_third.location = inputLocation.value;
+    overlay.breaking_news.headline = inputHeadline.value;
+    overlay.ticker.text = inputTicker.value;
+
+    pvName.textContent = inputName.value.trim() || 'REPORTER NAME';
+    pvRole.textContent = (inputRole.value.trim() || 'ROLE').toUpperCase();
+    pvLocation.textContent = (inputLocation.value.trim() || 'LOCATION').toUpperCase();
+    pvHeadline.textContent = inputHeadline.value.trim() || 'Breaking headline';
+    pvTickerText.textContent = inputTicker.value.trim() || 'Ticker update';
+  });
 });
 
 /* =========================================================
-   7. UPDATE ACTIONS — frontend-only confirmation
+   9. UPDATE ACTIONS
    ========================================================= */
-function showFeedback(el) {
-  el.classList.add('is-shown');
-  clearTimeout(el._hideTimer);
-  el._hideTimer = setTimeout(() => el.classList.remove('is-shown'), 1600);
-}
+updateLowerThirdBtn.addEventListener('click', () => saveState(feedbackLowerThird, updateLowerThirdBtn));
+updateBreakingBtn.addEventListener('click', () => saveState(feedbackBreaking, updateBreakingBtn));
+updateTickerBtn.addEventListener('click', () => saveState(feedbackTicker, updateTickerBtn));
 
-function markUpdated() {
-  state.lastUpdate = Date.now();
-  refreshLastUpdateLabel();
-}
-
-updateLowerThirdBtn.addEventListener('click', () => {
-  syncPreviewText();
-  showFeedback(feedbackLowerThird);
-  markUpdated();
+selectOverlay.addEventListener('change', async () => {
+  if (!state.overlays[selectOverlay.value]) {
+    state.overlays[selectOverlay.value] = state.overlays.main;
+  }
+  state.active_overlay = selectOverlay.value;
+  syncControlsFromState();
+  await saveState(null, selectOverlay);
 });
 
-updateBreakingBtn.addEventListener('click', () => {
-  syncPreviewText();
-  showFeedback(feedbackBreaking);
-  markUpdated();
-});
-
-updateTickerBtn.addEventListener('click', () => {
-  syncPreviewText();
-  showFeedback(feedbackTicker);
-  markUpdated();
+copyOverlayLinkBtn.addEventListener('click', async () => {
+  const overlayUrl = new URL('../broadcast/', window.location.href).href;
+  try {
+    await navigator.clipboard.writeText(overlayUrl);
+    showFeedback(feedbackOverlayLink, 'Copied');
+  } catch (error) {
+    const temp = document.createElement('input');
+    temp.value = overlayUrl;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    temp.remove();
+    showFeedback(feedbackOverlayLink, 'Copied');
+  }
 });
 
 /* =========================================================
-   8. RELATIVE "LAST UPDATE" TIMESTAMP
+   10. RELATIVE "LAST UPDATE" TIMESTAMP
    ========================================================= */
 function refreshLastUpdateLabel() {
-  const seconds = Math.floor((Date.now() - state.lastUpdate) / 1000);
+  const seconds = Math.max(0, Math.floor((Date.now() - state.lastUpdate) / 1000));
   let label;
   if (seconds < 5) label = 'Just now';
   else if (seconds < 60) label = seconds + 's ago';
@@ -1268,12 +1416,12 @@ function refreshLastUpdateLabel() {
 setInterval(refreshLastUpdateLabel, 5000);
 
 /* =========================================================
-   9. INIT
+   11. INIT
    ========================================================= */
-syncPreviewText();
-syncPreviewVisibility();
-syncOverlayStatus();
-refreshLastUpdateLabel();
+loadState().then(() => {
+  syncControlsFromState();
+  refreshLastUpdateLabel();
+});
 </script>
 
 </body>

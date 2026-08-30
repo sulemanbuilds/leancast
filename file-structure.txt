@@ -52,10 +52,10 @@ public/assets/css/control.css
 → Styles the control panel.
 
 public/assets/js/broadcast.js
-→ Checks for overlay changes and updates the broadcast screen without reload.
+→ Polls the broadcast state API every 5 seconds and updates the broadcast screen without reload.
 
 public/assets/js/control.js
-→ Sends control changes to the backend using AJAX without reload.
+→ Sends control changes to the backend using AJAX; the backend persists the state to `data/broadcast.json`.
 
 public/assets/images/logo.png
 → Lean Cast logo or broadcast branding image.
@@ -64,10 +64,10 @@ api/
 → PHP endpoints used by the frontend.
 
 api/update-overlay.php
-→ Receives changes from the control panel and saves them.
+→ Receives control changes through AJAX and safely saves them to `data/broadcast.json`.
 
 api/broadcast-state.php
-→ Sends the current overlay data to the broadcast screen.
+→ Reads `data/broadcast.json` and returns the current overlay state to the broadcast screen.
 
 data/
 → Stores the current broadcast state without using MySQL.
