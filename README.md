@@ -4,6 +4,8 @@
 
 **A lightweight two-smartphone live broadcasting system.**
 
+> Broadcast state is shared between the control and broadcast screens through AJAX and `data/broadcast.json` — no page reload is required.
+
 A cloud-based broadcasting concept designed to help independent reporters, freelance journalists, and small news channels create professional live broadcasts using just two smartphones.
 
 <br>
