@@ -1,0 +1,79 @@
+lean-cast/
+│
+├── public/
+│   ├── index.php
+│   ├── broadcast/
+│   │   └── index.php
+│   ├── control/
+│   │   └── index.php
+│   └── assets/
+│       ├── css/
+│       │   ├── broadcast.css
+│       │   └── control.css
+│       ├── js/
+│       │   ├── broadcast.js
+│       │   └── control.js
+│       └── images/
+│           └── logo.png
+│
+├── api/
+│   ├── update-overlay.php
+│   └── broadcast-state.php
+│
+├── data/
+│   └── broadcast.json
+│
+└── file-structure.txt
+
+
+
+WHY EACH FILE/FOLDER EXISTS
+────────────────────────────
+
+public/
+→ Contains the pages and assets users access from the browser.
+
+public/index.php
+→ Main Lean Cast page.
+
+public/broadcast/index.php
+→ Broadcast screen shown on Phone 1.
+
+public/control/index.php
+→ Control panel shown on Phone 2.
+
+public/assets/
+→ Contains CSS, JavaScript, and images.
+
+public/assets/css/broadcast.css
+→ Styles the broadcast screen and overlays.
+
+public/assets/css/control.css
+→ Styles the control panel.
+
+public/assets/js/broadcast.js
+→ Polls the broadcast state API every 5 seconds and updates the broadcast screen without reload.
+
+public/assets/js/control.js
+→ Sends control changes to the backend using AJAX; the backend persists the state to `data/broadcast.json`.
+
+public/assets/images/logo.png
+→ Lean Cast logo or broadcast branding image.
+
+api/
+→ PHP endpoints used by the frontend.
+
+api/update-overlay.php
+→ Receives control changes through AJAX and safely saves them to `data/broadcast.json`.
+
+api/broadcast-state.php
+→ Reads `data/broadcast.json` and returns the current overlay state to the broadcast screen.
+
+data/
+→ Stores the current broadcast state without using MySQL.
+
+data/broadcast.json
+→ Stores the current headline, reporter, location, ticker, and other overlay data.
+
+file-structure.txt
+→ Explains the project structure for other developers.

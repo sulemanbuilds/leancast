@@ -1,161 +1,284 @@
 <div align="center">
 
-🎥 Lean Cast
+# 🎥 Lean Cast
 
-AI-powered live streaming using just two smartphones.
+**A lightweight two-smartphone live broadcasting system.**
 
-A cloud-based streaming concept built to make multi-camera live streaming simpler, smarter, and more accessible.
+> Broadcast state is shared between the control and broadcast screens through AJAX and `data/broadcast.json` — no page reload is required.
+
+A cloud-based broadcasting concept designed to help independent reporters, freelance journalists, and small news channels create professional live broadcasts using just two smartphones.
 
 <br>
 
-
-
-
-
 </div>
 
-✨ What is Lean Cast?
+---
 
-Lean Cast is an experimental cloud-based AI streaming solution that turns two smartphones into a lightweight multi-camera streaming setup.
+## ✨ What is Lean Cast?
 
-Instead of relying on expensive cameras, capture cards, and complicated production hardware, Lean Cast explores how devices people already own can work together through the cloud.
+Lean Cast is a lightweight, cloud-based live broadcasting system built around **two smartphones**.
 
-Two phones → Cloud + AI → Smarter live streaming
+One smartphone is used by the **reporter to capture the live broadcast**, while the second smartphone acts as a **broadcast control panel**.
 
-🚀 Core Idea
+The operator can control professional broadcast elements such as lower thirds, breaking-news banners, headlines, reporter information, locations, channel branding, and scrolling tickers without interrupting the live broadcast.
 
-📱 Phone 1
+The goal is simple:
 
-☁️ Lean Cast
+**📱 Reporter Phone → ☁️ Lean Cast → 📱 Control Phone**
 
-📱 Phone 2
+Two smartphones provide the core tools needed to manage a lightweight live broadcast setup without traditional broadcast equipment.
 
-Primary Camera
+---
 
-Cloud Processing
+## 🚀 Core Idea
 
-Secondary Camera
+```text
+┌─────────────────────┐
+│      📱 PHONE 1     │
+│      Reporter       │
+│                     │
+│   Live Broadcast    │
+└──────────┬──────────┘
+           │
+           │
+           ▼
+    ☁️ LEAN CAST
+   Broadcasting System
+           ▲
+           │
+           │
+┌──────────┴──────────┐
+│      📱 PHONE 2     │
+│      Operator       │
+│                     │
+│   Broadcast Control │
+└─────────────────────┘
+```
 
-Video / Audio
+### 📱 Phone 1 — Reporter
 
-AI-powered workflow
+The first smartphone is used by the reporter to capture and transmit the live broadcast.
 
-Video / Audio
+### 📱 Phone 2 — Operator
 
-The two devices provide different perspectives while the cloud layer handles the backend processing and coordination.
+The second smartphone acts as the broadcast control interface.
 
-🧠 Why Lean Cast?
+The operator can manage:
 
-Traditional multi-camera streaming can require:
+* Headlines
+* Breaking-news banners
+* Lower thirds
+* Reporter names
+* Reporter roles
+* Locations
+* Scrolling tickers
+* Channel branding
+* Overlay visibility
 
-Expensive cameras
+The two devices work together through the Lean Cast system.
 
-Capture hardware
+---
 
-Powerful computers
+## 🎯 The Problem
 
-Complex software
+Independent reporters, freelance journalists, and small news channels often need professional live coverage but may not have access to expensive broadcast equipment or dedicated production teams.
 
-Technical setup
+Traditional broadcasting can require:
 
-Lean Cast takes a different approach: use smartphones as the cameras and move the heavy lifting toward the cloud.
+* Professional cameras
+* Dedicated graphics systems
+* Production hardware
+* Powerful computers
+* Complicated software
+* Multiple technical operators
 
-Built around three principles
+This can make professional live broadcasting difficult for small teams, especially during field reporting and breaking-news situations.
 
-📱 Accessible
-Use hardware that users already have.
+---
 
-☁️ Cloud-powered
-Move processing and coordination into the cloud.
+## 💡 The Solution
 
-🤖 AI-ready
-Create a foundation for intelligent streaming automation.
+Lean Cast reduces the complexity of live broadcasting by using **two smartphones as the foundation of the system**.
 
-⚡ Potential Features
+Instead of requiring a traditional broadcast production setup:
 
-🎬 Two-camera live streaming
+```text
+Traditional Setup
+Cameras
++ Production Hardware
++ Graphics System
++ Technical Setup
+```
 
-🤖 AI-assisted streaming workflow
+Lean Cast focuses on:
 
-☁️ Cloud-based processing
+```text
+Two Smartphones
++ Cloud-Based System
++ Broadcast Controls
+```
 
-📡 Real-time video communication
+The result is a more portable and accessible approach to live broadcasting.
 
-🎥 Flexible camera positioning
+---
 
-📊 Foundation for stream analytics
+## ⚡ Core Features
 
-✂️ Future AI-generated highlights & clips
+### 🎥 Two-Smartphone Broadcasting
 
-📝 Future automatic captions
+Use one smartphone for reporting and another smartphone for broadcast control.
 
-🏗️ Architecture
+### 🎨 Professional Broadcast Overlays
 
-       ┌─────────────────┐
-       │    📱 Phone 1   │
-       │  Primary Camera │
-       └────────┬────────┘
-                │
-                ▼
-       ┌─────────────────┐
-       │                 │
-       │   ☁️ LEAN CAST  │
-       │                 │
-       │  Cloud + AI     │
-       │  Processing     │
-       │  Coordination   │
-       │                 │
-       └────────┬────────┘
-                ▲
-                │
-       ┌────────┴────────┐
-       │    📱 Phone 2   │
-       │ Secondary Camera│
-       └─────────────────┘
+Manage broadcast graphics such as:
 
-🛠️ Built With
+* Lower thirds
+* Breaking-news banners
+* Headlines
+* Reporter information
+* Locations
+* Channel branding
+* Scrolling tickers
+
+### 📡 Remote Broadcast Control
+
+The operator can manage broadcast information from the second smartphone while the reporter continues the live coverage.
+
+### ⚡ Dynamic Overlay Updates
+
+Broadcast information can be changed during an active broadcast without requiring the broadcast screen to be manually refreshed.
+
+### 📱 Mobile-First Control
+
+The control interface is designed specifically for smartphone use so a small reporting team can operate the system from the field.
+
+---
+
+## 🏗️ Current Architecture
+
+```text
+                  LEAN CAST
+              Broadcasting System
+
+       ┌─────────────────────────┐
+       │                         │
+       │     Broadcast State     │
+       │     & Overlay Data      │
+       │                         │
+       └───────────┬─────────────┘
+                   │
+          ┌────────┴────────┐
+          │                 │
+          ▼                 ▼
+
+   📱 PHONE 1            📱 PHONE 2
+   Broadcast Screen      Control Screen
+         │                     │
+         │                     │
+         │                Operator controls
+         │                     │
+         └─────── Live ───────┘
+```
+
+The current MVP uses a simple request-based communication model.
+
+The control interface sends changes to the backend, while the broadcast screen checks for the latest broadcast state and updates its overlays without a full page reload.
+
+---
+
+## 🛠️ Current Technology
+
+Lean Cast's current MVP is intentionally lightweight.
+
+### Frontend
+
+* HTML
+* CSS
+* JavaScript
+* AJAX
+* Bootstrap where useful
+
+### Backend
+
+* Core PHP
+
+### Data
+
+* Lightweight server-side broadcast state
+
+The project currently does **not require**:
+
+* MySQL
+* WebSockets
+* AI models
+* Complex backend frameworks
+
+The architecture is intentionally kept simple so the core broadcasting workflow can be developed and tested quickly.
+
+---
+
+## 🎯 Initial Target Market
+
+Lean Cast is initially focused on:
+
+* Independent reporters
+* Freelance journalists
+* Small news channels
+* Local media organizations
+* Small reporting teams
+* Independent broadcasters
+
+These users often need professional live coverage while working with limited equipment, budget, and technical resources.
+
+---
+
+## 🏆 Hackathon Project
+
+Lean Cast was developed for the **AI Hackathon by Al-Khidmat Foundation Pakistan in collaboration with Alibaba Cloud**.
+
+The project was created as a practical exploration of how cloud-based technology can reduce the complexity and cost of live broadcasting.
+
+Lean Cast was selected during the initial hackathon evaluation and is being further developed as part of the revised project submission.
+
+---
+
+## 🔮 Future Expansion
+
+The current MVP focuses on the core two-smartphone broadcasting system.
+
+Future versions can expand into additional markets and capabilities such as:
+
+### New Markets
+
+* Educational institutions
+* Event organizers
+* NGOs and community organizations
+* Corporate broadcasting
+* Emergency and public-information broadcasting
+* Content creators
+* Sports and community events
+
+### Future Technology
+
+* AI-assisted broadcasting
+* AI camera switching
+* Smart framing
+* Automatic captions
+* Multilingual translation
+* Noise reduction
+* AI-generated highlights
+* Stream analytics
+* Advanced broadcast automation
+
+AI is considered a **future expansion**, not a required part of the current MVP.
+
+---
 
 <div align="center">
 
-Mobile • Cloud Computing • Artificial Intelligence • Live Streaming • Backend Services
+## 🎥 Two smartphones. One lean broadcasting system.
 
-</div>
-
-The architecture is designed to remain flexible so additional AI and streaming capabilities can be introduced as the project evolves.
-
-🏆 Hackathon Project
-
-Lean Cast was developed for the AI Hackathon by Al-Khidmat Foundation Pakistan in collaboration with Alibaba Cloud.
-
-16,000+ submissions → 3,000 selected teams
-
-The project was built as a practical exploration of how AI and cloud technologies can solve an everyday production problem.
-
-👨‍💻 Team
-
-Member
-
-Role
-
-Sagar Habib
-
-Team Lead · Full Stack Developer
-
-Suleman Memon
-
-Team Member
-
-🔮 What's Next?
-
-Lean Cast has the potential to evolve beyond a prototype with features such as:
-
-AI Camera Switching · Smart Framing · Auto Captions · Noise Reduction · AI Highlights · Stream Analytics
-
-<div align="center">
-
-🎥 Stream smarter. Build leaner.
-
-Lean Cast — Turning two phones into a smarter streaming setup.
+**Lean Cast — Making professional live broadcasting more accessible.**
 
 <br>
 

@@ -11,7 +11,7 @@ $currentYear = date('Y');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lean Cast — Two phones. Cloud. AI. Smarter live streaming.</title>
+<title>Lean Cast</title>
 <meta name="description" content="Lean Cast is a cloud-based AI streaming concept that turns two smartphones into a lightweight multi-camera live-streaming setup. Built for the AI Hackathon by Al-Khidmat Foundation Pakistan × Alibaba Cloud.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1116,11 +1116,6 @@ footer{
       <div class="glass team-card ">
         <div class="index-num">02</div>
         <h3>Suleman Memon</h3>
-        <p>Team Member</p>
-      </div>
-      <div class="glass team-card ">
-        <div class="index-num">03</div>
-        <h3>Dua Shahid</h3>
         <p>Team Member</p>
       </div>
     </div>
