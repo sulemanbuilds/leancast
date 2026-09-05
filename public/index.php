@@ -892,11 +892,11 @@ footer{
         <span class="line"><span>Think</span></span>
         <span class="line"><span class="accent">smarter.</span></span>
       </h1>
-      <p class="hero-desc">
+      <!-- <p class="hero-desc">
         Lean Cast is a cloud-based AI streaming concept that turns two smartphones
         into a lightweight multi-camera live-streaming setup — without the
         traditional production complexity.
-      </p>
+      </p> -->
       <div class="hero-actions">
         <a href="#concept" class="btn btn-primary" data-cursor="hover">Explore the idea ↓</a>
         <a href="#architecture" class="btn btn-secondary" data-cursor="hover">See architecture</a>
@@ -934,7 +934,7 @@ footer{
           <div class="phone-screen"><div class="rec"><span class="rec-dot"></span>LIVE</div></div>
         </div>
 
-        <span class="phone-label l2"><b>PHONE 02</b>SECONDARY CAMERA</span>
+        <span class="phone-label l2"><b>PHONE 02</b>Control Panel</span>
         <div class="phone-mock p2" id="phoneTwo">
           <div class="phone-screen"><div class="rec"><span class="rec-dot"></span>LIVE</div></div>
         </div>
@@ -1105,7 +1105,7 @@ footer{
   <div class="container">
     <div class="section-head ">
       <span class="eyebrow">04 / The Team</span>
-      <h2>Three people. One lean idea.</h2>
+      <h2>Two people. One lean idea.</h2>
     </div>
     <div class="team-grid">
       <div class="glass team-card ">
