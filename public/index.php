@@ -951,7 +951,7 @@ footer{
   <div class="container stats-inner">
     <div class="stat ">
       <div class="num">2</div>
-      <div class="label">Smartphones as cameras</div>
+      <div class="label">Smartphones</div>
     </div>
     <div class="stat ">
       <div class="num">AI</div>
@@ -998,8 +998,8 @@ footer{
 
       <div class="glass feature-card ">
         <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M11 18h2"/></svg></div>
-        <h3>Two-camera setup</h3>
-        <p>Two smartphones can provide different viewpoints, creating a flexible production setup without dedicated cameras.</p>
+        <h3>one-camera setup</h3>
+        <p>one smartphone can provide different viewpoints, creating a flexible production setup without dedicated cameras.</p>
       </div>
 
       <div class="glass feature-card ">
@@ -1063,7 +1063,7 @@ footer{
 
         <div class="glass arch-node">
           <div class="tag">PHONE 02</div>
-          <div class="title">Secondary Camera</div>
+          <div class="title">Control</div>
         </div>
 
       </div>
