@@ -573,7 +573,7 @@ html, body {
   <!-- ============================================================
        DESIGN 01 — Classic Strip
        ============================================================ -->
-  <div class="design" data-design="design-01"<?= lc_active('design-01', $activeDesign) ?>>
+  <div class="design<?= lc_active('design-01', $activeDesign) ?>" data-design="design-01">
     <div class="d1-stack">
       <div class="d1-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
         <div class="d1-lower-third__bar">
@@ -607,7 +607,7 @@ html, body {
   <!-- ============================================================
        DESIGN 02 — Corner Panel
        ============================================================ -->
-  <div class="design" data-design="design-02"<?= lc_active('design-02', $activeDesign) ?>>
+  <div class="design<?= lc_active('design-02', $activeDesign) ?>" data-design="design-02">
     <div class="d2-panel stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
       <div class="d2-panel__chip"></div>
       <span class="d2-panel__name" data-field="name"><?= $name ?></span>
@@ -632,7 +632,7 @@ html, body {
   <!-- ============================================================
        DESIGN 03 — Split Bar
        ============================================================ -->
-  <div class="design" data-design="design-03"<?= lc_active('design-03', $activeDesign) ?>>
+  <div class="design<?= lc_active('design-03', $activeDesign) ?>" data-design="design-03">
     <div class="d3-stack">
       <div class="d3-bar stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
         <span class="d3-bar__name" data-field="name"><?= $name ?></span>
@@ -658,7 +658,7 @@ html, body {
   <!-- ============================================================
        DESIGN 04 — Minimal Tag
        ============================================================ -->
-  <div class="design" data-design="design-04"<?= lc_active('design-04', $activeDesign) ?>>
+  <div class="design<?= lc_active('design-04', $activeDesign) ?>" data-design="design-04">
     <div class="d4-pill stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
       <span class="d4-pill__dot"></span>
       <span class="d4-pill__text"><span data-field="name"><?= $name ?></span> · <span class="role" data-field="role"><?= $role ?></span></span>
@@ -682,7 +682,7 @@ html, body {
   <!-- ============================================================
        DESIGN 05 — News Desk
        ============================================================ -->
-  <div class="design" data-design="design-05"<?= lc_active('design-05', $activeDesign) ?>>
+  <div class="design<?= lc_active('design-05', $activeDesign) ?>" data-design="design-05">
     <div class="d5-stack">
       <div class="d5-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
         <span class="d5-lower-third__shape"></span>
@@ -716,7 +716,7 @@ html, body {
    1. CONFIG & STATE
    ========================================================= */
 const VALID_DESIGNS = ['design-01', 'design-02', 'design-03', 'design-04', 'design-05'];
-const POLL_INTERVAL_MS = 2500;
+const POLL_INTERVAL_MS = 5000;
 
 const canvas = document.getElementById('broadcastCanvas');
 let currentDesign = canvas.getAttribute('data-active-design') || 'design-01';
