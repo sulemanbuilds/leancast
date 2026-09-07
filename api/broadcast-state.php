@@ -22,6 +22,13 @@ if (!is_array($data)) {
     exit;
 }
 
+/* Backward-compatible default: state files saved before the
+   multi-design feature existed won't have this key yet. */
+$validDesigns = ['zaviya', 'fanoos', 'sitara'];
+if (!isset($data['active_design']) || !in_array($data['active_design'], $validDesigns, true)) {
+    $data['active_design'] = 'zaviya';
+}
+
 echo json_encode([
     'success' => true,
     'data' => $data,

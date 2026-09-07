@@ -892,11 +892,11 @@ footer{
         <span class="line"><span>Think</span></span>
         <span class="line"><span class="accent">smarter.</span></span>
       </h1>
-      <p class="hero-desc">
+      <!-- <p class="hero-desc">
         Lean Cast is a cloud-based AI streaming concept that turns two smartphones
         into a lightweight multi-camera live-streaming setup — without the
         traditional production complexity.
-      </p>
+      </p> -->
       <div class="hero-actions">
         <a href="#concept" class="btn btn-primary" data-cursor="hover">Explore the idea ↓</a>
         <a href="#architecture" class="btn btn-secondary" data-cursor="hover">See architecture</a>
@@ -934,7 +934,7 @@ footer{
           <div class="phone-screen"><div class="rec"><span class="rec-dot"></span>LIVE</div></div>
         </div>
 
-        <span class="phone-label l2"><b>PHONE 02</b>SECONDARY CAMERA</span>
+        <span class="phone-label l2"><b>PHONE 02</b>Control Panel</span>
         <div class="phone-mock p2" id="phoneTwo">
           <div class="phone-screen"><div class="rec"><span class="rec-dot"></span>LIVE</div></div>
         </div>
@@ -951,7 +951,7 @@ footer{
   <div class="container stats-inner">
     <div class="stat ">
       <div class="num">2</div>
-      <div class="label">Smartphones as cameras</div>
+      <div class="label">Smartphones</div>
     </div>
     <div class="stat ">
       <div class="num">AI</div>
@@ -998,8 +998,8 @@ footer{
 
       <div class="glass feature-card ">
         <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M11 18h2"/></svg></div>
-        <h3>Two-camera setup</h3>
-        <p>Two smartphones can provide different viewpoints, creating a flexible production setup without dedicated cameras.</p>
+        <h3>one-camera setup</h3>
+        <p>one smartphone can provide different viewpoints, creating a flexible production setup without dedicated cameras.</p>
       </div>
 
       <div class="glass feature-card ">
@@ -1063,7 +1063,7 @@ footer{
 
         <div class="glass arch-node">
           <div class="tag">PHONE 02</div>
-          <div class="title">Secondary Camera</div>
+          <div class="title">Control</div>
         </div>
 
       </div>
@@ -1105,7 +1105,7 @@ footer{
   <div class="container">
     <div class="section-head ">
       <span class="eyebrow">04 / The Team</span>
-      <h2>Three people. One lean idea.</h2>
+      <h2>Two people. One lean idea.</h2>
     </div>
     <div class="team-grid">
       <div class="glass team-card ">
