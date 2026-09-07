@@ -1,6 +1,6 @@
 {
     "active_overlay": "main",
-    "active_design": "design-05",
+    "active_design": "sitara",
     "overlays": {
         "main": {
             "lower_third": {
@@ -20,5 +20,5 @@
             }
         }
     },
-    "updated_at": 1788771871
+    "updated_at": 1788772566
 }

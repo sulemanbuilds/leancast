@@ -77,13 +77,13 @@ $allOverlays[$activeOverlay] = $clean;
    previously persisted design is kept as-is — saving overlay
    content should never silently reset the active design.
    ----------------------------------------------------------- */
-$validDesigns = ['design-01', 'design-02', 'design-03', 'design-04', 'design-05'];
+$validDesigns = ['zaviya', 'fanoos', 'sitara'];
 $requestedDesign = isset($input['active_design']) && is_string($input['active_design'])
     ? trim($input['active_design'])
     : null;
 $activeDesign = in_array($requestedDesign, $validDesigns, true)
     ? $requestedDesign
-    : ($existing['active_design'] ?? 'design-01');
+    : ($existing['active_design'] ?? 'zaviya');
 
 $output = [
     'active_overlay' => $activeOverlay,

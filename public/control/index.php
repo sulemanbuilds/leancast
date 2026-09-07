@@ -318,29 +318,22 @@ input, textarea, select { font-family: inherit; }
 
 .design-card__label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; color: var(--white); text-transform: uppercase; }
 
-/* thumbnail mini-compositions — abstract, not literal renders */
-.thumb-bar { position: absolute; left: 8%; right: 30%; bottom: 26%; height: 16%; background: rgba(245,247,251,0.14); border-left: 2px solid var(--orange); border-radius: 1px; }
-.thumb-tick { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; background: rgba(79,124,255,0.35); }
+/* thumbnail mini-compositions — abstract, not literal renders,
+   one per channel identity, using each channel's own palette */
+.tz-bar { position: absolute; left: 8%; right: 34%; bottom: 26%; height: 16%; background: linear-gradient(135deg, #F2B705, #E1233D); border-radius: 1px; }
+.tz-badge { position: absolute; left: 8%; top: 14%; width: 16%; aspect-ratio: 1; border-radius: 3px; background: linear-gradient(135deg, #E1233D, #8C0F22); color: #fff; font-family: var(--font-mono); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.tz-tick { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; background: rgba(225,35,61,0.35); border-top: 1px solid rgba(225,35,61,0.6); }
 
-.thumb-panel { position: absolute; left: 8%; bottom: 30%; width: 34%; height: 34%; border: 1.5px solid rgba(255,157,66,0.5); border-radius: 3px; }
-.thumb-ribbon { position: absolute; left: 8%; right: 20%; bottom: 16%; height: 10%; background: linear-gradient(135deg, var(--orange), #E45800); clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%); }
-.thumb-tick-blue { position: absolute; left: 0; right: 0; bottom: 0; height: 14%; background: linear-gradient(90deg, rgba(79,124,255,0.4), transparent); }
+.tf-bar { position: absolute; left: 8%; right: 38%; bottom: 26%; height: 14%; background: rgba(245,247,251,0.14); border-left: 2px solid #D89B3C; }
+.tf-badge { position: absolute; left: 8%; top: 14%; width: 16%; aspect-ratio: 1; border-radius: 50%; background: linear-gradient(135deg, #D89B3C, #8A5A18); color: #1D1002; font-family: var(--font-mono); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.tf-tick { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background: rgba(216,155,60,0.3); }
 
-.thumb-split { position: absolute; left: 8%; right: 40%; bottom: 30%; height: 16%; display: flex; }
-.thumb-split .a { flex: 1; background: var(--orange); border-radius: 1px 0 0 1px; }
-.thumb-split .b { flex: 1; background: rgba(245,247,251,0.14); border-radius: 0 1px 1px 0; }
-.thumb-tick-split { position: absolute; left: 0; right: 0; bottom: 0; height: 14%; background: rgba(79,124,255,0.35); }
-.thumb-tick-split::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 12%; background: var(--orange); }
-
-.thumb-pill { position: absolute; left: 8%; bottom: 30%; width: 46%; height: 14%; border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; }
-.thumb-strip { position: absolute; left: 8%; right: 8%; bottom: 14%; height: 8%; background: rgba(245,247,251,0.1); border-left: 2px solid var(--orange); }
-.thumb-tick-thin { position: absolute; left: 0; right: 0; bottom: 0; height: 8%; background: rgba(146,153,168,0.3); }
-
-.thumb-shape { position: absolute; left: 6%; bottom: 26%; width: 18%; height: 22%; background: linear-gradient(135deg, var(--orange-light), var(--orange)); clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%); }
-.thumb-bar-bold { position: absolute; left: 8%; right: 24%; bottom: 26%; height: 12%; background: rgba(245,247,251,0.16); }
-.thumb-ribbon-bold { position: absolute; left: 8%; right: 8%; bottom: 14%; height: 10%; background: linear-gradient(135deg, var(--orange), #E45800); }
-.thumb-tick-dual { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; background: var(--bg-elevated); }
-.thumb-tick-dual::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 26%; background: linear-gradient(135deg, var(--orange-light), var(--orange)); }
+.ts-bar { position: absolute; left: 8%; right: 34%; bottom: 26%; height: 14%; display: flex; }
+.ts-bar::before { content: ''; flex: 1; background: linear-gradient(135deg, #33D1C9, #2F6FED); border-radius: 1px 0 0 1px; }
+.ts-bar::after { content: ''; flex: 1; background: rgba(245,247,251,0.14); border-radius: 0 1px 1px 0; }
+.ts-badge { position: absolute; left: 8%; top: 14%; width: 14%; aspect-ratio: 1; border-radius: 3px; transform: rotate(45deg); background: linear-gradient(135deg, #2F6FED, #173E96); display: flex; align-items: center; justify-content: center; }
+.ts-badge span { display: block; transform: rotate(-45deg); color: #fff; font-family: var(--font-mono); font-size: 7px; font-weight: 700; }
+.ts-tick { position: absolute; left: 0; right: 0; bottom: 0; height: 14%; background: rgba(47,111,237,0.3); }
 
 /* =========================================================
    16. RESPONSIVE — two-column on larger screens
@@ -489,34 +482,34 @@ input, textarea, select { font-family: inherit; }
         <div class="panel__header"><span class="panel__title"><strong>Broadcast</strong> Design</span></div>
         <div class="design-grid" id="designGrid">
 
-          <button class="design-card" type="button" data-design="design-01">
+          <button class="design-card" type="button" data-design="zaviya">
             <span class="design-card__badge">ACTIVE</span>
-            <span class="design-card__thumb"><span class="thumb-bar"></span><span class="thumb-tick"></span></span>
-            <span class="design-card__label">Classic Strip</span>
+            <span class="design-card__thumb thumb-zaviya">
+              <span class="tz-bar"></span>
+              <span class="tz-badge">Z</span>
+              <span class="tz-tick"></span>
+            </span>
+            <span class="design-card__label">Zaviya News</span>
           </button>
 
-          <button class="design-card" type="button" data-design="design-02">
+          <button class="design-card" type="button" data-design="fanoos">
             <span class="design-card__badge">ACTIVE</span>
-            <span class="design-card__thumb"><span class="thumb-panel"></span><span class="thumb-ribbon"></span><span class="thumb-tick-blue"></span></span>
-            <span class="design-card__label">Corner Panel</span>
+            <span class="design-card__thumb thumb-fanoos">
+              <span class="tf-bar"></span>
+              <span class="tf-badge">F</span>
+              <span class="tf-tick"></span>
+            </span>
+            <span class="design-card__label">Fanoos News</span>
           </button>
 
-          <button class="design-card" type="button" data-design="design-03">
+          <button class="design-card" type="button" data-design="sitara">
             <span class="design-card__badge">ACTIVE</span>
-            <span class="design-card__thumb"><span class="thumb-split"><span class="a"></span><span class="b"></span></span><span class="thumb-tick-split"></span></span>
-            <span class="design-card__label">Split Bar</span>
-          </button>
-
-          <button class="design-card" type="button" data-design="design-04">
-            <span class="design-card__badge">ACTIVE</span>
-            <span class="design-card__thumb"><span class="thumb-pill"></span><span class="thumb-strip"></span><span class="thumb-tick-thin"></span></span>
-            <span class="design-card__label">Minimal Tag</span>
-          </button>
-
-          <button class="design-card" type="button" data-design="design-05">
-            <span class="design-card__badge">ACTIVE</span>
-            <span class="design-card__thumb"><span class="thumb-shape"></span><span class="thumb-bar-bold"></span><span class="thumb-ribbon-bold"></span><span class="thumb-tick-dual"></span></span>
-            <span class="design-card__label">News Desk</span>
+            <span class="design-card__thumb thumb-sitara">
+              <span class="ts-bar"></span>
+              <span class="ts-badge"><span>S</span></span>
+              <span class="ts-tick"></span>
+            </span>
+            <span class="design-card__label">Sitara News</span>
           </button>
 
         </div>
@@ -619,12 +612,12 @@ input, textarea, select { font-family: inherit; }
    1. CONFIG & STATE
    ========================================================= */
 const API_BASE = '../../api/';
-const VALID_DESIGNS = ['design-01', 'design-02', 'design-03', 'design-04', 'design-05'];
+const VALID_DESIGNS = ['zaviya', 'fanoos', 'sitara'];
 
 const state = {
   active_overlay: 'main',
-  active_design: 'design-01',
-  selectedDesign: 'design-01',
+  active_design: 'zaviya',
+  selectedDesign: 'zaviya',
   overlays: {
     main: {
       lower_third: { enabled: true, name: 'SULEMAN MEMON', role: 'FIELD REPORTER', location: 'HYDERABAD' },
@@ -908,7 +901,7 @@ async function loadState() {
     const json = await res.json();
     if (json && json.success && json.data) {
       state.active_overlay = json.data.active_overlay || 'main';
-      state.active_design = VALID_DESIGNS.includes(json.data.active_design) ? json.data.active_design : 'design-01';
+      state.active_design = VALID_DESIGNS.includes(json.data.active_design) ? json.data.active_design : 'zaviya';
       state.selectedDesign = state.active_design;
       state.overlays = json.data.overlays || state.overlays;
       syncControlsFromState();

@@ -2,16 +2,20 @@
 /**
  * Lean Cast — Broadcast Screen (Phone 1)
  * Transparent overlay canvas rendered on top of the live camera feed.
+ * Hosts three original, bold "flagship bulletin" channel identities —
+ * Zaviya News, Fanoos News, Sitara News — switchable from Control.
+ * The LeanCast platform mark + LIVE indicator stay constant across all
+ * three; only the channel package (colours, marks, composition) changes.
  * Display only — no controls. Reads initial state server-side from
- * data/broadcast.json (if present) so the very first paint already
- * reflects reality, then keeps itself in sync via polling.
+ * data/broadcast.json so the first paint already reflects reality,
+ * then stays in sync via polling.
  */
 
-$validDesigns = ['design-01', 'design-02', 'design-03', 'design-04', 'design-05'];
+$validDesigns = ['zaviya', 'fanoos', 'sitara'];
 
 $defaultState = [
     'active_overlay' => 'main',
-    'active_design'  => 'design-01',
+    'active_design'  => 'zaviya',
     'overlays' => [
         'main' => [
             'lower_third'   => ['enabled' => true, 'name' => 'SULEMAN MEMON', 'role' => 'FIELD REPORTER', 'location' => 'HYDERABAD'],
@@ -32,7 +36,7 @@ if (is_file($dataFile)) {
 }
 
 if (!in_array($state['active_design'], $validDesigns, true)) {
-    $state['active_design'] = 'design-01';
+    $state['active_design'] = 'zaviya';
 }
 
 $activeOverlayKey = is_string($state['active_overlay']) && $state['active_overlay'] !== '' ? $state['active_overlay'] : 'main';
@@ -69,7 +73,7 @@ function lc_active($id, $active) { return $id === $active ? ' is-active' : ''; }
 <title>Lean Cast — Broadcast Screen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <style>
 
@@ -91,7 +95,8 @@ html, body {
 }
 
 /* =========================================================
-   2. DESIGN TOKENS
+   2. PLATFORM DESIGN TOKENS (LeanCast chrome — unchanged
+   across every channel package)
    ========================================================= */
 :root {
   --bg: #07090D;
@@ -113,7 +118,7 @@ html, body {
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* consistent safe-area spacing — unchanged across every design */
+  /* consistent safe-area spacing — unchanged across every channel */
   --edge: clamp(16px, 2.2vw, 32px);
   --ticker-height: 38px;
   --stack-gap: 14px;
@@ -121,8 +126,8 @@ html, body {
 
 /* =========================================================
    3. BROADCAST CANVAS — fully transparent overlay layer
-   (size/behaviour preserved exactly; only the composition
-   inside changes between designs)
+   (size/behaviour preserved exactly; only the channel package
+   inside changes)
    ========================================================= */
 .broadcast-canvas {
   position: relative;
@@ -134,13 +139,14 @@ html, body {
 }
 
 /* =========================================================
-   4. LOGO / LIVE STATUS — persistent across all designs
+   4. LEANCAST PLATFORM MARK / LIVE STATUS — persistent,
+   identical in every channel package
    ========================================================= */
 .channel-logo {
   position: absolute;
   top: var(--edge);
   left: var(--edge);
-  z-index: 8;
+  z-index: 9;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -167,19 +173,11 @@ html, body {
 
 .channel-logo .word span { color: var(--orange-light); font-weight: 500; }
 
-.channel-logo .rule {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, var(--orange-light), transparent);
-  margin-top: 3px;
-  display: none;
-}
-
 .live-status {
   position: absolute;
   top: var(--edge);
   right: var(--edge);
-  z-index: 8;
+  z-index: 9;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -205,10 +203,6 @@ html, body {
   50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-/* subtle per-design logo variation (style only — position never moves) */
-.broadcast-canvas[data-active-design="design-04"] .channel-logo .word { display: none; }
-.broadcast-canvas[data-active-design="design-05"] .channel-logo .rule { display: block; }
-
 /* =========================================================
    5. DESIGN SWITCHER SHELL
    ========================================================= */
@@ -221,9 +215,6 @@ html, body {
 
 .design.is-active { display: block; }
 
-/* Shared enable/disable behaviour for lower third, breaking
-   news and ticker — identical mechanism in every design, only
-   their own CSS gives them a different look. */
 .overlay-toggle {
   transition: opacity 0.3s var(--ease-out), transform 0.35s var(--ease-out);
 }
@@ -234,7 +225,8 @@ html, body {
 }
 
 [data-overlay="lower-third"].is-hidden,
-[data-overlay="breaking-news"].is-hidden {
+[data-overlay="breaking-news"].is-hidden,
+[data-overlay="channel-bug"].is-hidden {
   transform: translateY(10px);
 }
 
@@ -242,297 +234,257 @@ html, body {
   transform: translateY(100%);
 }
 
-/* Shared ticker scroll motion — reused by every design */
 @keyframes tickerScroll {
   from { transform: translateX(0%); }
   to   { transform: translateX(-50%); }
 }
 
-/* =========================================================================================
-   6. DESIGN 01 — "CLASSIC STRIP"
-   Full-width accent-edge lower third, ribbon breaking news, two-tone ticker.
-   The established Lean Cast baseline look.
-   ========================================================================================= */
-.d1-stack {
+/* =========================================================
+   6. CHANNEL BUG — shared shell, per-channel colour via
+   --ch-* custom properties set on each .design
+   ========================================================= */
+.channel-bug {
   position: absolute;
-  left: var(--edge);
   right: var(--edge);
   bottom: calc(var(--ticker-height) + var(--edge));
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--stack-gap);
-}
-
-.d1-lower-third { align-self: flex-start; max-width: min(56%, 460px); }
-
-.d1-lower-third__bar {
-  display: flex;
-  align-items: stretch;
-  background: var(--glass-fill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--border-softer);
-  border-radius: 2px;
-}
-
-.d1-lower-third__edge { width: 3px; flex-shrink: 0; background: linear-gradient(180deg, var(--orange-light), var(--orange)); }
-.d1-lower-third__content { padding: 8px 14px 9px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.d1-lower-third__name { font-family: var(--font-display); font-weight: 600; font-size: clamp(14px, 1.7vw, 18px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.d1-lower-third__meta { display: flex; align-items: center; gap: 7px; }
-.d1-lower-third__role { font-family: var(--font-mono); font-size: clamp(9px, 0.9vw, 10.5px); letter-spacing: 0.09em; text-transform: uppercase; color: var(--orange-light); white-space: nowrap; }
-.d1-lower-third__divider { width: 1px; height: 9px; background: var(--border-soft); flex-shrink: 0; }
-.d1-lower-third__location { font-family: var(--font-mono); font-size: clamp(9px, 0.9vw, 10.5px); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.d1-breaking {
-  align-self: stretch;
-  display: flex;
-  align-items: stretch;
-  border-radius: 2px;
-  overflow: hidden;
-  border-top: 1px solid rgba(255, 106, 0, 0.4);
-  border-bottom: 1px solid rgba(255, 106, 0, 0.15);
-  background: var(--glass-fill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 0 30px rgba(255, 106, 0, 0.14);
-}
-
-.d1-breaking__tag { flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 0 14px; background: linear-gradient(135deg, var(--orange), #E45800); }
-.d1-breaking__tag .dot { width: 5px; height: 5px; border-radius: 50%; background: #0A0603; animation: livePulse 1.4s ease-in-out infinite; }
-.d1-breaking__tag span { font-family: var(--font-mono); font-weight: 600; font-size: 10.5px; letter-spacing: 0.13em; color: #0A0603; white-space: nowrap; }
-.d1-breaking__headline { display: flex; align-items: center; padding: 9px 16px; font-family: var(--font-display); font-weight: 600; font-size: clamp(12.5px, 1.4vw, 15px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.design[data-design="design-01"] .ticker {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height);
-  display: flex; align-items: center; background: var(--bg-elevated); border-top: 1px solid var(--border-soft); overflow: hidden;
-}
-.design[data-design="design-01"] .ticker__label { flex-shrink: 0; height: 100%; display: flex; align-items: center; padding: 0 16px; background: linear-gradient(135deg, var(--blue), #3A5FE0); font-family: var(--font-mono); font-weight: 600; font-size: 10px; letter-spacing: 0.12em; color: var(--white); white-space: nowrap; }
-.design[data-design="design-01"] .ticker__track { flex: 1; overflow: hidden; position: relative; height: 100%; }
-.design[data-design="design-01"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--muted); }
-.design[data-design="design-01"] .ticker__track-inner span { padding-right: 64px; }
-
-/* =========================================================================================
-   7. DESIGN 02 — "CORNER PANEL"
-   Boxed name-card lower third, angled breaking-news ribbon, gradient ticker tab.
-   ========================================================================================= */
-.design[data-design="design-02"] { --ticker-height: 36px; }
-
-.d2-panel {
-  position: absolute;
-  left: var(--edge);
-  bottom: calc(var(--ticker-height) + var(--edge));
-  z-index: 6;
-  max-width: min(46%, 340px);
-  background: var(--glass-fill);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 157, 66, 0.32);
-  border-radius: 6px;
-  padding: 12px 16px;
-  box-shadow: 0 12px 34px -14px rgba(0,0,0,0.55);
-}
-
-.d2-panel__chip { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, var(--orange-light), var(--orange)); margin-bottom: 8px; }
-.d2-panel__name { display: block; font-family: var(--font-display); font-weight: 600; font-size: clamp(14px, 1.6vw, 17px); color: var(--white); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.d2-panel__role { display: block; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange-light); margin-bottom: 2px; }
-.d2-panel__location { display: block; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-
-.d2-breaking {
-  position: absolute;
-  left: var(--edge);
-  right: calc(var(--edge) + 8%);
-  bottom: calc(var(--ticker-height) + var(--edge) + 78px);
-  z-index: 6;
-  display: flex;
-  align-items: stretch;
-  height: 34px;
-  background: var(--glass-fill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 106, 0, 0.35);
-  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
-}
-
-.d2-breaking__tag { flex-shrink: 0; display: flex; align-items: center; padding: 0 16px 0 12px; background: linear-gradient(135deg, var(--orange), #E45800); font-family: var(--font-mono); font-weight: 600; font-size: 10px; letter-spacing: 0.12em; color: #0A0603; white-space: nowrap; }
-.d2-breaking__headline { display: flex; align-items: center; padding: 0 16px; font-family: var(--font-display); font-weight: 600; font-size: clamp(11.5px, 1.3vw, 14px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.design[data-design="design-02"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: center; overflow: hidden; background: linear-gradient(90deg, rgba(79,124,255,0.16), var(--bg-elevated) 40%); border-top: 1px solid var(--border-soft); }
-.design[data-design="design-02"] .ticker__label { flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 0 14px; font-family: var(--font-mono); font-weight: 600; font-size: 9.5px; letter-spacing: 0.1em; color: var(--blue); white-space: nowrap; }
-.design[data-design="design-02"] .ticker__label .sq { width: 6px; height: 6px; background: var(--blue); border-radius: 1px; flex-shrink: 0; }
-.design[data-design="design-02"] .ticker__track { flex: 1; overflow: hidden; position: relative; height: 100%; }
-.design[data-design="design-02"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--muted); }
-.design[data-design="design-02"] .ticker__track-inner span { padding-right: 60px; }
-
-/* =========================================================================================
-   8. DESIGN 03 — "SPLIT BAR"
-   Continuous two-tone name bar, stacked breaking-news block, dual-cap ticker.
-   ========================================================================================= */
-.d3-stack {
-  position: absolute;
-  left: var(--edge);
-  right: var(--edge);
-  bottom: calc(var(--ticker-height) + var(--edge));
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.d3-bar { align-self: flex-start; display: flex; max-width: min(64%, 520px); border-radius: 2px; overflow: hidden; box-shadow: 0 10px 28px -14px rgba(0,0,0,0.5); }
-.d3-bar__name { flex-shrink: 0; display: flex; align-items: center; padding: 9px 16px; background: linear-gradient(135deg, var(--orange-light), var(--orange)); font-family: var(--font-display); font-weight: 700; font-size: clamp(13px, 1.5vw, 16px); color: #150900; white-space: nowrap; }
-.d3-bar__meta { display: flex; align-items: center; gap: 7px; padding: 9px 14px; background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); white-space: nowrap; overflow: hidden; }
-.d3-bar__meta .loc { color: var(--muted); }
-.d3-bar__meta .sep { color: var(--border-soft); }
-
-.d3-breaking { align-self: stretch; display: flex; flex-direction: column; gap: 2px; padding: 9px 14px; border-left: 3px solid var(--orange); background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 0 26px rgba(255,106,0,0.12); }
-.d3-breaking__label { font-family: var(--font-mono); font-weight: 600; font-size: 9.5px; letter-spacing: 0.14em; color: var(--orange-light); }
-.d3-breaking__headline { font-family: var(--font-display); font-weight: 600; font-size: clamp(13px, 1.5vw, 16px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.design[data-design="design-03"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: stretch; background: var(--bg-elevated); border-top: 1px solid var(--border-soft); overflow: hidden; }
-.design[data-design="design-03"] .ticker__label { flex-shrink: 0; display: flex; align-items: center; padding: 0 14px; background: linear-gradient(135deg, var(--blue), #3A5FE0); font-family: var(--font-mono); font-weight: 600; font-size: 10px; letter-spacing: 0.1em; color: var(--white); white-space: nowrap; }
-.design[data-design="design-03"] .ticker__track { flex: 1; overflow: hidden; position: relative; }
-.design[data-design="design-03"] .ticker__track-inner { position: absolute; top: 0; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
-.design[data-design="design-03"] .ticker__track-inner span { padding-right: 60px; }
-.design[data-design="design-03"] .ticker__end { flex-shrink: 0; width: 8px; background: linear-gradient(135deg, var(--orange), #E45800); }
-
-/* =========================================================================================
-   9. DESIGN 04 — "MINIMAL TAG"
-   Pill name tag, slim accent-line breaking strip, ultra-thin mono ticker.
-   ========================================================================================= */
-.design[data-design="design-04"] { --ticker-height: 24px; }
-
-.d4-pill {
-  position: absolute;
-  left: var(--edge);
-  bottom: calc(var(--ticker-height) + var(--edge) + 40px);
-  z-index: 6;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px 7px 8px;
-  background: var(--glass-fill);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  max-width: min(64%, 420px);
-}
-
-.d4-pill__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange-light); flex-shrink: 0; }
-.d4-pill__text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.d4-pill__text .role { color: var(--muted); }
-
-.d4-breaking {
-  position: absolute;
-  left: var(--edge);
-  right: var(--edge);
-  bottom: calc(var(--ticker-height) + var(--edge));
-  z-index: 6;
+  z-index: 7;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  background: var(--glass-fill);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  gap: 7px;
+  opacity: 0.94;
+}
+
+.channel-bug__badge {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--ch-text-on-a);
+  background: linear-gradient(135deg, var(--ch-a), var(--ch-a-dark));
+  box-shadow: 0 0 14px var(--ch-glow);
+}
+
+.channel-bug__badge--square { border-radius: 5px; }
+.channel-bug__badge--circle { border-radius: 50%; }
+.channel-bug__badge--diamond { border-radius: 4px; transform: rotate(45deg); }
+.channel-bug__badge--diamond span { display: block; transform: rotate(-45deg); }
+
+.channel-bug__word {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--white);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+  white-space: nowrap;
+}
+
+/* Ticker leading brand chip — shared shell */
+.ticker__brand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 13px;
+  background: linear-gradient(135deg, var(--ch-a), var(--ch-a-dark));
+}
+
+.ticker__brand .badge {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 8px;
+  color: var(--ch-text-on-a);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
 
-.d4-breaking__bar { width: 2px; align-self: stretch; background: var(--orange); border-radius: 1px; animation: livePulse 1.6s ease-in-out infinite; flex-shrink: 0; }
-.d4-breaking__label { font-family: var(--font-mono); font-weight: 600; font-size: 9px; letter-spacing: 0.12em; color: var(--orange-light); flex-shrink: 0; }
-.d4-breaking__headline { font-family: var(--font-body); font-weight: 500; font-size: clamp(11.5px, 1.3vw, 13.5px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.design[data-design="design-04"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: center; overflow: hidden; background: rgba(7,9,13,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.design[data-design="design-04"] .ticker__label { flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 0 12px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; }
-.design[data-design="design-04"] .ticker__label .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--green); }
-.design[data-design="design-04"] .ticker__track { flex: 1; overflow: hidden; position: relative; height: 100%; }
-.design[data-design="design-04"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 26s linear infinite; font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
-.design[data-design="design-04"] .ticker__track-inner span { padding-right: 56px; }
-
-/* =========================================================================================
-   10. DESIGN 05 — "NEWS DESK"
-   Bold parallelogram-backed lower third, heavy breaking banner, dual-segment ticker.
-   ========================================================================================= */
-.design[data-design="design-05"] { --ticker-height: 42px; }
-
-.d5-stack {
-  position: absolute;
-  left: var(--edge);
-  right: var(--edge);
-  bottom: calc(var(--ticker-height) + var(--edge));
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+.ticker__brand .name {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--ch-text-on-a);
+  white-space: nowrap;
 }
 
-.d5-lower-third { position: relative; align-self: flex-start; max-width: min(60%, 480px); padding: 4px 0; }
-.d5-lower-third__shape { position: absolute; left: -6px; top: 2px; bottom: 2px; width: 42px; background: linear-gradient(135deg, var(--orange-light), var(--orange)); clip-path: polygon(14% 0, 100% 0, 86% 100%, 0% 100%); z-index: -1; opacity: 0.9; }
-.d5-lower-third__bar { display: flex; flex-direction: column; gap: 3px; padding: 10px 18px 11px 26px; background: var(--glass-fill); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border-soft); }
-.d5-lower-third__name { font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 2vw, 22px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.d5-lower-third__rule { width: 28px; height: 2px; background: var(--orange); margin: 2px 0; }
-.d5-lower-third__meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-.d5-lower-third__meta .role { color: var(--orange-light); }
+.ticker__loc {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-right: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
 
-.d5-breaking { align-self: stretch; display: flex; align-items: stretch; border-radius: 2px; overflow: hidden; box-shadow: 0 0 40px rgba(255,106,0,0.22); }
-.d5-breaking__tag { flex-shrink: 0; display: flex; align-items: center; padding: 0 20px; background: linear-gradient(135deg, var(--orange), #E45800); }
-.d5-breaking__tag span { font-family: var(--font-mono); font-weight: 700; font-size: 12px; letter-spacing: 0.14em; color: #0A0603; white-space: nowrap; }
-.d5-breaking__headline { flex: 1; display: flex; align-items: center; padding: 12px 20px; background: var(--glass-fill); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 1.7vw, 18px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* =========================================================================================
+   7. ZAVIYA NEWS — hard-hitting flagship register
+   Crimson + gold, parallelogram-backed lower third, heavy banner,
+   dual-tone ticker with a bold end-cap.
+   ========================================================================================= */
+.design[data-design="zaviya"] {
+  --ch-a: #E1233D;
+  --ch-a-dark: #8C0F22;
+  --ch-b: #F2B705;
+  --ch-text-on-a: #1A0402;
+  --ch-glow: rgba(225, 35, 61, 0.45);
+  --ticker-height: 44px;
+}
 
-.design[data-design="design-05"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: stretch; background: var(--bg-elevated); border-top: 1px solid var(--border-soft); overflow: hidden; }
-.design[data-design="design-05"] .ticker__label { flex-shrink: 0; display: flex; align-items: center; padding: 0 18px; background: linear-gradient(135deg, var(--orange-light), var(--orange)); font-family: var(--font-mono); font-weight: 700; font-size: 11px; letter-spacing: 0.1em; color: #150900; white-space: nowrap; }
-.design[data-design="design-05"] .ticker__segment { flex-shrink: 0; display: flex; align-items: center; padding: 0 14px; background: linear-gradient(135deg, var(--blue), #3A5FE0); font-family: var(--font-mono); font-weight: 600; font-size: 9.5px; letter-spacing: 0.1em; color: var(--white); white-space: nowrap; }
-.design[data-design="design-05"] .ticker__track { flex: 1; overflow: hidden; position: relative; }
-.design[data-design="design-05"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
-.design[data-design="design-05"] .ticker__track-inner span { padding-right: 64px; }
+.zv-stack {
+  position: absolute; left: var(--edge); right: var(--edge);
+  bottom: calc(var(--ticker-height) + var(--edge)); z-index: 6;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+}
+
+.zv-lower-third { position: relative; align-self: flex-start; max-width: min(60%, 480px); padding: 4px 0; }
+.zv-lower-third__shape { position: absolute; left: -6px; top: 2px; bottom: 2px; width: 42px; background: linear-gradient(135deg, var(--ch-b), var(--ch-a)); clip-path: polygon(14% 0, 100% 0, 86% 100%, 0% 100%); z-index: -1; }
+.zv-lower-third__bar { display: flex; flex-direction: column; gap: 3px; padding: 10px 18px 11px 26px; background: var(--glass-fill); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border-soft); border-left: 3px solid var(--ch-a); }
+.zv-lower-third__name { font-family: var(--font-display); font-weight: 800; font-size: clamp(18px, 2.1vw, 23px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zv-lower-third__rule { width: 30px; height: 2px; background: var(--ch-a); margin: 2px 0; }
+.zv-lower-third__meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.zv-lower-third__meta .role { color: var(--ch-b); }
+
+.zv-breaking { align-self: stretch; display: flex; align-items: stretch; border-radius: 2px; overflow: hidden; box-shadow: 0 0 44px var(--ch-glow); }
+.zv-breaking__tag { flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 20px; background: linear-gradient(135deg, var(--ch-a), var(--ch-a-dark)); }
+.zv-breaking__tag .dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: livePulse 1.2s ease-in-out infinite; }
+.zv-breaking__tag span { font-family: var(--font-mono); font-weight: 800; font-size: 12.5px; letter-spacing: 0.14em; color: #fff; white-space: nowrap; }
+.zv-breaking__headline { flex: 1; display: flex; align-items: center; padding: 13px 20px; background: var(--glass-fill); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-family: var(--font-display); font-weight: 700; font-size: clamp(15px, 1.8vw, 19px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.design[data-design="zaviya"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: stretch; background: var(--bg-elevated); border-top: 2px solid var(--ch-a); overflow: hidden; }
+.design[data-design="zaviya"] .ticker__track { flex: 1; overflow: hidden; position: relative; }
+.design[data-design="zaviya"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 22s linear infinite; font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--white); }
+.design[data-design="zaviya"] .ticker__track-inner span { padding-right: 64px; }
+.design[data-design="zaviya"] .ticker__end { flex-shrink: 0; width: 10px; background: linear-gradient(135deg, var(--ch-b), var(--ch-a)); }
+
+/* =========================================================================================
+   8. FANOOS NEWS — warm, trusted, analytical register
+   Amber + maroon, classic accent-edge lower third, restrained
+   ribbon breaking news, calm two-tone ticker.
+   ========================================================================================= */
+.design[data-design="fanoos"] {
+  --ch-a: #D89B3C;
+  --ch-a-dark: #8A5A18;
+  --ch-b: #7C2E2E;
+  --ch-text-on-a: #1D1002;
+  --ch-glow: rgba(216, 155, 60, 0.38);
+  --ticker-height: 38px;
+}
+
+.fn-stack {
+  position: absolute; left: var(--edge); right: var(--edge);
+  bottom: calc(var(--ticker-height) + var(--edge)); z-index: 6;
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--stack-gap);
+}
+
+.fn-lower-third { align-self: flex-start; max-width: min(54%, 440px); }
+.fn-lower-third__bar { display: flex; align-items: stretch; background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-softer); border-radius: 2px; }
+.fn-lower-third__edge { width: 3px; flex-shrink: 0; background: linear-gradient(180deg, var(--ch-b), var(--ch-a)); }
+.fn-lower-third__content { padding: 9px 15px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fn-lower-third__name { font-family: var(--font-display); font-weight: 600; font-size: clamp(14px, 1.7vw, 18px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fn-lower-third__meta { display: flex; align-items: center; gap: 7px; }
+.fn-lower-third__role { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ch-a); white-space: nowrap; }
+.fn-lower-third__divider { width: 1px; height: 9px; background: var(--border-soft); flex-shrink: 0; }
+.fn-lower-third__location { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.fn-breaking { align-self: stretch; display: flex; align-items: stretch; border-radius: 2px; overflow: hidden; border-top: 1px solid var(--ch-a); background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 0 30px var(--ch-glow); }
+.fn-breaking__tag { flex-shrink: 0; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(135deg, var(--ch-a), var(--ch-a-dark)); font-family: var(--font-mono); font-weight: 600; font-size: 10.5px; letter-spacing: 0.12em; color: var(--ch-text-on-a); white-space: nowrap; }
+.fn-breaking__headline { display: flex; align-items: center; padding: 10px 17px; font-family: var(--font-display); font-weight: 600; font-size: clamp(13px, 1.4vw, 15.5px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.design[data-design="fanoos"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: center; background: var(--bg-elevated); border-top: 1px solid var(--border-soft); overflow: hidden; }
+.design[data-design="fanoos"] .ticker__track { flex: 1; overflow: hidden; position: relative; height: 100%; }
+.design[data-design="fanoos"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--muted); }
+.design[data-design="fanoos"] .ticker__track-inner span { padding-right: 64px; }
+
+/* =========================================================================================
+   9. SITARA NEWS — modern, digital-forward register
+   Blue + cyan, continuous two-tone name bar, stacked breaking
+   block, sleek geometric ticker.
+   ========================================================================================= */
+.design[data-design="sitara"] {
+  --ch-a: #2F6FED;
+  --ch-a-dark: #173E96;
+  --ch-b: #33D1C9;
+  --ch-text-on-a: #04121F;
+  --ch-glow: rgba(47, 111, 237, 0.4);
+  --ticker-height: 36px;
+}
+
+.st-stack {
+  position: absolute; left: var(--edge); right: var(--edge);
+  bottom: calc(var(--ticker-height) + var(--edge)); z-index: 6;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+}
+
+.st-bar { align-self: flex-start; display: flex; max-width: min(62%, 500px); border-radius: 2px; overflow: hidden; box-shadow: 0 10px 28px -14px rgba(0,0,0,0.5); }
+.st-bar__name { flex-shrink: 0; display: flex; align-items: center; padding: 9px 16px; background: linear-gradient(135deg, var(--ch-b), var(--ch-a)); font-family: var(--font-display); font-weight: 700; font-size: clamp(13px, 1.5vw, 16px); color: var(--ch-text-on-a); white-space: nowrap; }
+.st-bar__meta { display: flex; align-items: center; gap: 7px; padding: 9px 14px; background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); white-space: nowrap; overflow: hidden; }
+.st-bar__meta .loc { color: var(--muted); }
+.st-bar__meta .sep { color: var(--border-soft); }
+
+.st-breaking { align-self: stretch; display: flex; flex-direction: column; gap: 2px; padding: 9px 14px; border-left: 3px solid var(--ch-a); background: var(--glass-fill); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 0 26px var(--ch-glow); }
+.st-breaking__label { font-family: var(--font-mono); font-weight: 600; font-size: 9.5px; letter-spacing: 0.14em; color: var(--ch-b); }
+.st-breaking__headline { font-family: var(--font-display); font-weight: 600; font-size: clamp(13px, 1.5vw, 16px); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.design[data-design="sitara"] .ticker { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: var(--ticker-height); display: flex; align-items: stretch; background: var(--bg-elevated); border-top: 1px solid var(--border-soft); overflow: hidden; }
+.design[data-design="sitara"] .ticker__track { flex: 1; overflow: hidden; position: relative; }
+.design[data-design="sitara"] .ticker__track-inner { position: absolute; white-space: nowrap; display: flex; align-items: center; height: 100%; animation: tickerScroll 24s linear infinite; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.design[data-design="sitara"] .ticker__track-inner span { padding-right: 60px; }
+.design[data-design="sitara"] .ticker__end { flex-shrink: 0; width: 8px; background: linear-gradient(135deg, var(--ch-a), var(--ch-b)); }
 
 /* =========================================================
-   11. RESPONSIVE — overlays stay anchored in every design
+   10. RESPONSIVE — overlays stay anchored in every channel
    ========================================================= */
 @media (max-width: 860px) {
-  .d1-lower-third { max-width: 68%; }
-  .d3-bar { max-width: 78%; }
-  .d5-lower-third { max-width: 74%; }
+  .zv-lower-third { max-width: 74%; }
+  .fn-lower-third { max-width: 68%; }
+  .st-bar { max-width: 78%; }
 }
 
 @media (max-width: 620px) {
   .channel-logo .word { display: none; }
+  .channel-bug__word { display: none; }
+  .channel-bug { gap: 0; }
 
-  /* Design 01 */
-  .d1-lower-third { max-width: none; align-self: stretch; }
-  .d1-lower-third__content { padding: 7px 12px 8px; }
-  .d1-breaking__headline { padding: 7px 12px 9px; white-space: normal; line-height: 1.28; }
+  /* Zaviya */
+  .zv-lower-third { max-width: none; align-self: stretch; }
+  .zv-breaking__headline { padding: 10px 16px 12px; white-space: normal; line-height: 1.3; }
 
-  /* Design 02 */
-  .d2-panel { right: var(--edge); max-width: none; }
-  .d2-breaking { right: var(--edge); bottom: calc(var(--ticker-height) + var(--edge) + 68px); clip-path: none; }
+  /* Fanoos */
+  .fn-lower-third { max-width: none; align-self: stretch; }
+  .fn-lower-third__content { padding: 7px 12px 8px; }
+  .fn-breaking__headline { padding: 7px 12px 9px; white-space: normal; line-height: 1.28; }
 
-  /* Design 03 */
-  .d3-bar { max-width: none; align-self: stretch; flex-direction: column; }
-  .d3-bar__name, .d3-bar__meta { width: 100%; }
-
-  /* Design 04 */
-  .d4-pill { max-width: none; right: var(--edge); }
-  .d4-breaking__headline { white-space: normal; line-height: 1.3; }
-
-  /* Design 05 */
-  .d5-lower-third { max-width: none; align-self: stretch; }
-  .d5-breaking { flex-direction: column; }
-  .d5-breaking__headline { padding: 9px 18px 11px; white-space: normal; line-height: 1.3; }
+  /* Sitara */
+  .st-bar { max-width: none; align-self: stretch; flex-direction: column; }
+  .st-bar__name, .st-bar__meta { width: 100%; }
 }
 
 /* =========================================================
-   12. REDUCED MOTION
+   11. REDUCED MOTION
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   .live-status .live-dot,
-  .d1-breaking__tag .dot,
-  .d4-breaking__bar {
+  .zv-breaking__tag .dot {
     animation: none;
     opacity: 1;
   }
@@ -555,13 +507,10 @@ html, body {
      ============================================================ -->
 <div class="broadcast-canvas" id="broadcastCanvas" data-active-design="<?= htmlspecialchars($activeDesign, ENT_QUOTES, 'UTF-8') ?>">
 
-  <!-- Channel logo (persistent) -->
+  <!-- LeanCast platform mark (persistent, identical in every channel) -->
   <div class="channel-logo">
     <span class="mark"></span>
-    <div>
-      <span class="word">LEAN<span>CAST</span></span>
-      <div class="rule"></div>
-    </div>
+    <span class="word">LEAN<span>CAST</span></span>
   </div>
 
   <!-- Live indicator (persistent) -->
@@ -571,80 +520,30 @@ html, body {
   </div>
 
   <!-- ============================================================
-       DESIGN 01 — Classic Strip
+       ZAVIYA NEWS
        ============================================================ -->
-  <div class="design<?= lc_active('design-01', $activeDesign) ?>" data-design="design-01">
-    <div class="d1-stack">
-      <div class="d1-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
-        <div class="d1-lower-third__bar">
-          <span class="d1-lower-third__edge"></span>
-          <div class="d1-lower-third__content">
-            <span class="d1-lower-third__name" data-field="name"><?= $name ?></span>
-            <div class="d1-lower-third__meta">
-              <span class="d1-lower-third__role" data-field="role"><?= $role ?></span>
-              <span class="d1-lower-third__divider"></span>
-              <span class="d1-lower-third__location" data-field="location"><?= $location ?></span>
-            </div>
-          </div>
+  <div class="design<?= lc_active('zaviya', $activeDesign) ?>" data-design="zaviya">
+    <div class="zv-stack">
+      <div class="zv-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
+        <span class="zv-lower-third__shape"></span>
+        <div class="zv-lower-third__bar">
+          <span class="zv-lower-third__name" data-field="name"><?= $name ?></span>
+          <span class="zv-lower-third__rule"></span>
+          <span class="zv-lower-third__meta"><span class="role" data-field="role"><?= $role ?></span> &nbsp;·&nbsp; <span data-field="location"><?= $location ?></span></span>
         </div>
       </div>
-      <div class="d1-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
-        <div class="d1-breaking__tag"><span class="dot"></span><span>BREAKING NEWS</span></div>
-        <div class="d1-breaking__headline" data-field="headline"><?= $headline ?></div>
+      <div class="zv-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
+        <div class="zv-breaking__tag"><span class="dot"></span><span>BREAKING NEWS</span></div>
+        <div class="zv-breaking__headline" data-field="headline"><?= $headline ?></div>
       </div>
+    </div>
+    <div class="channel-bug stagger-item overlay-toggle" data-overlay="channel-bug">
+      <span class="channel-bug__badge channel-bug__badge--square"><span>Z</span></span>
+      <span class="channel-bug__word">Zaviya News</span>
     </div>
     <div class="ticker stagger-item overlay-toggle<?= $tkHidden ?>" data-overlay="ticker">
-      <div class="ticker__label" data-field="ticker-label"><?= $tickerLabel ?></div>
-      <div class="ticker__track">
-        <div class="ticker__track-inner">
-          <span data-field="ticker-text"><?= $tickerText ?></span>
-          <span data-field="ticker-text"><?= $tickerText ?></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       DESIGN 02 — Corner Panel
-       ============================================================ -->
-  <div class="design<?= lc_active('design-02', $activeDesign) ?>" data-design="design-02">
-    <div class="d2-panel stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
-      <div class="d2-panel__chip"></div>
-      <span class="d2-panel__name" data-field="name"><?= $name ?></span>
-      <span class="d2-panel__role" data-field="role"><?= $role ?></span>
-      <span class="d2-panel__location" data-field="location"><?= $location ?></span>
-    </div>
-    <div class="d2-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
-      <div class="d2-breaking__tag">BREAKING</div>
-      <div class="d2-breaking__headline" data-field="headline"><?= $headline ?></div>
-    </div>
-    <div class="ticker stagger-item overlay-toggle<?= $tkHidden ?>" data-overlay="ticker">
-      <div class="ticker__label"><span class="sq"></span><span data-field="ticker-label"><?= $tickerLabel ?></span></div>
-      <div class="ticker__track">
-        <div class="ticker__track-inner">
-          <span data-field="ticker-text"><?= $tickerText ?></span>
-          <span data-field="ticker-text"><?= $tickerText ?></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       DESIGN 03 — Split Bar
-       ============================================================ -->
-  <div class="design<?= lc_active('design-03', $activeDesign) ?>" data-design="design-03">
-    <div class="d3-stack">
-      <div class="d3-bar stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
-        <span class="d3-bar__name" data-field="name"><?= $name ?></span>
-        <span class="d3-bar__meta"><span class="role" data-field="role"><?= $role ?></span><span class="sep">&nbsp;·&nbsp;</span><span class="loc" data-field="location"><?= $location ?></span></span>
-      </div>
-      <div class="d3-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
-        <span class="d3-breaking__label">BREAKING NEWS</span>
-        <span class="d3-breaking__headline" data-field="headline"><?= $headline ?></span>
-      </div>
-    </div>
-    <div class="ticker stagger-item overlay-toggle<?= $tkHidden ?>" data-overlay="ticker">
-      <div class="ticker__label" data-field="ticker-label"><?= $tickerLabel ?></div>
+      <div class="ticker__brand"><span class="badge">Z</span><span class="name">ZAVIYA</span></div>
+      <div class="ticker__loc" data-field="ticker-label"><?= $tickerLabel ?></div>
       <div class="ticker__track">
         <div class="ticker__track-inner">
           <span data-field="ticker-text"><?= $tickerText ?></span>
@@ -656,20 +555,35 @@ html, body {
   </div>
 
   <!-- ============================================================
-       DESIGN 04 — Minimal Tag
+       FANOOS NEWS
        ============================================================ -->
-  <div class="design<?= lc_active('design-04', $activeDesign) ?>" data-design="design-04">
-    <div class="d4-pill stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
-      <span class="d4-pill__dot"></span>
-      <span class="d4-pill__text"><span data-field="name"><?= $name ?></span> · <span class="role" data-field="role"><?= $role ?></span></span>
+  <div class="design<?= lc_active('fanoos', $activeDesign) ?>" data-design="fanoos">
+    <div class="fn-stack">
+      <div class="fn-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
+        <div class="fn-lower-third__bar">
+          <span class="fn-lower-third__edge"></span>
+          <div class="fn-lower-third__content">
+            <span class="fn-lower-third__name" data-field="name"><?= $name ?></span>
+            <div class="fn-lower-third__meta">
+              <span class="fn-lower-third__role" data-field="role"><?= $role ?></span>
+              <span class="fn-lower-third__divider"></span>
+              <span class="fn-lower-third__location" data-field="location"><?= $location ?></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fn-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
+        <div class="fn-breaking__tag">BREAKING NEWS</div>
+        <div class="fn-breaking__headline" data-field="headline"><?= $headline ?></div>
+      </div>
     </div>
-    <div class="d4-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
-      <span class="d4-breaking__bar"></span>
-      <span class="d4-breaking__label">BREAKING</span>
-      <span class="d4-breaking__headline" data-field="headline"><?= $headline ?></span>
+    <div class="channel-bug stagger-item overlay-toggle" data-overlay="channel-bug">
+      <span class="channel-bug__badge channel-bug__badge--circle"><span>F</span></span>
+      <span class="channel-bug__word">Fanoos News</span>
     </div>
     <div class="ticker stagger-item overlay-toggle<?= $tkHidden ?>" data-overlay="ticker">
-      <div class="ticker__label"><span class="dot"></span><span data-field="ticker-label"><?= $tickerLabel ?></span></div>
+      <div class="ticker__brand"><span class="badge">F</span><span class="name">FANOOS</span></div>
+      <div class="ticker__loc" data-field="ticker-label"><?= $tickerLabel ?></div>
       <div class="ticker__track">
         <div class="ticker__track-inner">
           <span data-field="ticker-text"><?= $tickerText ?></span>
@@ -680,32 +594,33 @@ html, body {
   </div>
 
   <!-- ============================================================
-       DESIGN 05 — News Desk
+       SITARA NEWS
        ============================================================ -->
-  <div class="design<?= lc_active('design-05', $activeDesign) ?>" data-design="design-05">
-    <div class="d5-stack">
-      <div class="d5-lower-third stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
-        <span class="d5-lower-third__shape"></span>
-        <div class="d5-lower-third__bar">
-          <span class="d5-lower-third__name" data-field="name"><?= $name ?></span>
-          <span class="d5-lower-third__rule"></span>
-          <span class="d5-lower-third__meta"><span class="role" data-field="role"><?= $role ?></span> &nbsp;·&nbsp; <span data-field="location"><?= $location ?></span></span>
-        </div>
+  <div class="design<?= lc_active('sitara', $activeDesign) ?>" data-design="sitara">
+    <div class="st-stack">
+      <div class="st-bar stagger-item overlay-toggle<?= $ltHidden ?>" data-overlay="lower-third">
+        <span class="st-bar__name" data-field="name"><?= $name ?></span>
+        <span class="st-bar__meta"><span class="role" data-field="role"><?= $role ?></span><span class="sep">&nbsp;·&nbsp;</span><span class="loc" data-field="location"><?= $location ?></span></span>
       </div>
-      <div class="d5-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
-        <div class="d5-breaking__tag"><span>BREAKING NEWS</span></div>
-        <div class="d5-breaking__headline" data-field="headline"><?= $headline ?></div>
+      <div class="st-breaking stagger-item overlay-toggle<?= $bnHidden ?>" data-overlay="breaking-news">
+        <span class="st-breaking__label">BREAKING NEWS</span>
+        <span class="st-breaking__headline" data-field="headline"><?= $headline ?></span>
       </div>
     </div>
+    <div class="channel-bug stagger-item overlay-toggle" data-overlay="channel-bug">
+      <span class="channel-bug__badge channel-bug__badge--diamond"><span>S</span></span>
+      <span class="channel-bug__word">Sitara News</span>
+    </div>
     <div class="ticker stagger-item overlay-toggle<?= $tkHidden ?>" data-overlay="ticker">
-      <div class="ticker__label" data-field="ticker-label"><?= $tickerLabel ?></div>
-      <div class="ticker__segment">UPDATE</div>
+      <div class="ticker__brand"><span class="badge">S</span><span class="name">SITARA</span></div>
+      <div class="ticker__loc" data-field="ticker-label"><?= $tickerLabel ?></div>
       <div class="ticker__track">
         <div class="ticker__track-inner">
           <span data-field="ticker-text"><?= $tickerText ?></span>
           <span data-field="ticker-text"><?= $tickerText ?></span>
         </div>
       </div>
+      <div class="ticker__end"></div>
     </div>
   </div>
 
@@ -715,14 +630,14 @@ html, body {
 /* =========================================================
    1. CONFIG & STATE
    ========================================================= */
-const VALID_DESIGNS = ['design-01', 'design-02', 'design-03', 'design-04', 'design-05'];
+const VALID_DESIGNS = ['zaviya', 'fanoos', 'sitara'];
 const POLL_INTERVAL_MS = 5000;
 
 const canvas = document.getElementById('broadcastCanvas');
-let currentDesign = canvas.getAttribute('data-active-design') || 'design-01';
+let currentDesign = canvas.getAttribute('data-active-design') || 'zaviya';
 
 /* =========================================================
-   2. CONTENT BINDING — shared across all five designs
+   2. CONTENT BINDING — shared across all three channels
    ========================================================= */
 function setField(name, value, fallback) {
   const text = (value && String(value).trim()) || fallback || '';
@@ -814,7 +729,7 @@ function applyState(fullState) {
   const overlays = fullState.overlays || {};
   applyOverlayData(overlays[activeOverlayKey]);
 
-  const design = VALID_DESIGNS.includes(fullState.active_design) ? fullState.active_design : 'design-01';
+  const design = VALID_DESIGNS.includes(fullState.active_design) ? fullState.active_design : 'zaviya';
   if (design !== currentDesign) {
     switchDesign(design);
   }
