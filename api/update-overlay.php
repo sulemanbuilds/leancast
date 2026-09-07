@@ -69,8 +69,25 @@ $allOverlays = isset($existing['overlays']) && is_array($existing['overlays'])
     : [];
 $allOverlays[$activeOverlay] = $clean;
 
+/* -----------------------------------------------------------
+   Broadcast design (new)
+   A whitelist keeps this safe to use directly as a lookup key
+   on the frontend. If the request doesn't include a design
+   choice (e.g. the operator only edited overlay text), the
+   previously persisted design is kept as-is — saving overlay
+   content should never silently reset the active design.
+   ----------------------------------------------------------- */
+$validDesigns = ['zaviya', 'fanoos', 'sitara'];
+$requestedDesign = isset($input['active_design']) && is_string($input['active_design'])
+    ? trim($input['active_design'])
+    : null;
+$activeDesign = in_array($requestedDesign, $validDesigns, true)
+    ? $requestedDesign
+    : ($existing['active_design'] ?? 'zaviya');
+
 $output = [
     'active_overlay' => $activeOverlay,
+    'active_design' => $activeDesign,
     'overlays' => $allOverlays,
     'updated_at' => time(),
 ];
