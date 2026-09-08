@@ -1,6 +1,6 @@
 <?php
 /**
- * Lean Cast — Broadcast State Update API
+ * Lean Cast — Broadcast State Update API Based Working
  * Receives the current control state and safely persists it to data/broadcast.json.
  */
 header('Content-Type: application/json; charset=utf-8');
